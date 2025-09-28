@@ -5,6 +5,7 @@ import { SlotDTO } from "./slot";
 export interface BookingDTO {
   _id?: string;
   clientId: string | ClientDTO;
+  clientSnapshot?: Partial<ClientDTO>;
   placeId: string | PlaceDTO;
   slotId: string | SlotDTO;
   quantity: number;

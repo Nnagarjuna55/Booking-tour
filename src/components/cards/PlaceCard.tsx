@@ -34,24 +34,42 @@ const PlaceCard = ({
   // ensure URL has protocol (cloudinary returns https urls but just in case)
   const normalizeUrl = (u: string) => {
     if (!u) return "";
+    // already absolute
     if (u.startsWith("http://") || u.startsWith("https://")) return u;
+    // protocol-relative (//host/path)
+    if (u.startsWith("//")) return `https:${u}`;
+    // root-relative (starts with '/') - likely uploaded path on backend
+    if (u.startsWith("/")) {
+      // prefer Vite env or fallback to known backend URL
+      const apiBase = (import.meta as any).env?.VITE_API_BASE_URL || "https://booking-tour-backend-mlgs.onrender.com";
+      return `${apiBase.replace(/\/$/, "")}${u}`;
+    }
+    // otherwise assume it's a hostless path, try https
     return `https://${u}`;
   };
+  const isHttpUrl = (u: string) => typeof u === "string" && /^(https?:)?\/\//i.test(u);
+  const normalizedFirstImage = normalizeUrl(firstImage || "");
+  const hasValidImage = isHttpUrl(normalizedFirstImage) && normalizedFirstImage.length > 0;
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full">
       {/* Image */}
       <div className="w-full bg-gray-100 overflow-hidden">
         <div className="w-full aspect-[3/2] bg-gray-100 flex items-center justify-center overflow-hidden">
-        {firstImage && showImage ? (
-          <img
-            src={normalizeUrl(firstImage)}
-            alt={place.name}
-            className="w-full h-full object-cover"
-            onError={() => setShowImage(false)}
-          />
-        ) : (
-          <div className="text-gray-400 text-sm">No image</div>
-        )}
+          {hasValidImage && showImage ? (
+            <img
+              src={normalizedFirstImage}
+              alt={place.name}
+              className="w-full h-full object-cover"
+              onError={() => setShowImage(false)}
+            />
+          ) : (
+            // show a small placeholder image from public assets
+            <img
+              src="/logo192.png"
+              alt="placeholder"
+              className="w-24 h-24 object-contain text-gray-400"
+            />
+          )}
         </div>
       </div>
 
@@ -66,7 +84,8 @@ const PlaceCard = ({
           {/* Slots preview */}
           <div className="mt-3">
             <h4 className="text-sm font-medium text-gray-700">Slots</h4>
-            {place.slots && place.slots.length > 0 ? (
+            {Array.isArray(place.slots) ? (
+              place.slots.length > 0 ? (
               <ul className="mt-2 space-y-2">
                 {place.slots
                   .slice()
@@ -91,8 +110,16 @@ const PlaceCard = ({
                     );
                   })}
               </ul>
+              ) : (
+                <div className="mt-2 text-sm text-gray-500">No upcoming slots</div>
+              )
             ) : (
-              <div className="mt-2 text-sm text-gray-500">No slots</div>
+              // Backend may not include slots on the place list endpoint (to keep payload small).
+              // Don't show a misleading "No slots" message; encourage the user to open details
+              // where the full slots list is fetched.
+              <div className="mt-2 text-sm text-gray-500">
+                No upcoming slots previewed. <a href={`/places/${place._id}`} className="text-indigo-600 hover:underline">View details</a>
+              </div>
             )}
           </div>
         </div>

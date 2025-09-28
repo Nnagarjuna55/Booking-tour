@@ -63,13 +63,16 @@ const BookingList = () => {
                 } hover:bg-indigo-50 transition-colors`}
               >
                 <td className="px-4 py-3 text-sm text-gray-700">
-                  {b.clientId?.fullName}
+                  {b.clientSnapshot?.fullName ||
+                    (typeof b.clientId === "object" ? b.clientId?.fullName : b.clientId)}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-700">
-                  {b.placeId?.name}
+                  {typeof b.placeId === "object" ? b.placeId?.name : b.placeId}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-700">
-                  {new Date(b.slotId?.startAt).toLocaleString()}
+                  {typeof b.slotId === "object" && b.slotId?.startAt
+                    ? new Date(b.slotId.startAt).toLocaleString()
+                    : b.slotTime || "—"}
                 </td>
                 <td className="px-4 py-3 text-sm font-medium text-gray-800">
                   {b.quantity}
