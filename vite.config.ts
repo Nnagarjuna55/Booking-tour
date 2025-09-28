@@ -7,7 +7,8 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      "/api": "http://localhost:5000", // backend integration
+      // "/api": "http://localhost:5000", // backend integration
+      "/api": "https://booking-tour-465o.onrender.com", // backend integration
     },
   },
 });
