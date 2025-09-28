@@ -1,25 +1,10 @@
-// import axios from "axios";
-
-// const axiosInstance = axios.create({
-//   https:"//booking-tour-backend-mlgs.onrender.com": "/api", // proxied to backend
-//   // baseURL: "/api", // proxied to backend
-//   headers: { "Content-Type": "application/json" },
-// });
-
-// // attach token if available
-// axiosInstance.interceptors.request.use((config) => {
-//   const token = localStorage.getItem("token");
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return config;
-// });
-
-// export default axiosInstance;
 import axios from "axios";
 
+// Hardcoded backend base URL (production). Replace if backend URL changes.
+const baseURL = "https://booking-tour-backend-mlgs.onrender.com/api";
+
 const axiosInstance = axios.create({
-  baseURL: "https://booking-tour-backend-mlgs.onrender.com/api", // ✅ backend base URL
+  baseURL,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -27,7 +12,8 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers = config.headers || {};
+    (config.headers as any).Authorization = `Bearer ${token}`;
   }
   return config;
 });
